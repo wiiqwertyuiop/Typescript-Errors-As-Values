@@ -1,43 +1,41 @@
 type SuccessOrError<T, U = unknown> = SuccessResult<T> | ErrorResult<U>;
 
-class SuccessResult<T> {
-    public readonly isError = false;
-
-    constructor (private value: T) {}
-
-    public success() {
-        return this.value;
-    }
+type SuccessResult<T> = {
+    readonly isError: false;
+    readonly success: T;
 }
 
-class ErrorResult<U> {
-    public readonly isError = true;
+type ErrorResult<U> = {
+    readonly isError: true;
+    readonly error: U;
+}
 
-    constructor (private value: U = true as U) {}
+function isSuccess<T>(success: T): SuccessResult<T> {
+    return { success, isError: false };
+}
 
-    public error() {
-        return this.value;
-    }
+function isError<U>(error: U = undefined as U): ErrorResult<U> {
+    return { error, isError: true };
 }
 
 
 // Test function
 enum FormError{ "BAD_USERNANME", "BAD_PASSWORD" };
 
-function test(path = false): SuccessOrError<string, FormError> {
+function test(path = true): SuccessOrError<string, FormError> {
     if (path) {
-        return new SuccessResult("Happy path!");
+        return isSuccess("Happy path!");
     }
-    return new ErrorResult(FormError.BAD_USERNANME);
+    return isError(FormError.BAD_PASSWORD);
 }
 
 const response = test();
 
 if (!response.isError) {
-    console.log(`Success: [${response.success()}]`);
+    console.log(`Success: [${response.success}]`);
 } else {
     
-    switch (response.error()) {
+    switch (response.error) {
         case FormError.BAD_PASSWORD:
             console.log(`Error: [Bad Password!]`);
             break;
